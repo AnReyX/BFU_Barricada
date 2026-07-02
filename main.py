@@ -2,6 +2,7 @@ import pygame as pg
 import pygame_menu as pgm
 from game import Game
 
+
 class Application:
     def __init__(self) -> None:
         pg.init()
@@ -21,20 +22,30 @@ class Application:
 
         self.menu = pgm.Menu('', self.width, self.height, theme=self.mainTheme)
         self.options_menu = pgm.Menu('', self.width, self.height, theme=self.secondTheme)
+        self.rules_menu = pgm.Menu('', self.width, self.height, theme=self.secondTheme)
         self.select_menu = pgm.Menu('', self.width, self.height, theme=self.secondTheme)
         self.game_menu = pgm.Menu('', self.width, self.height, theme=self.gameTheme)
 
         self.menu.add.label("Баррикада!", margin=(-250, 0))
         self.menu.add.vertical_margin(130)
         self.menu.add.button('Играть', self.select_menu, margin=(-125, 0), selection_color=(0, 0, 0))
-        self.menu.add.vertical_margin(130)
-        self.menu.add.button('Опции', self.options_menu, margin=(-375, 0), selection_color=(0, 0, 0))
-        self.menu.add.vertical_margin(130)
+        self.menu.add.vertical_margin(120)
+        frame = self.menu.add.frame_h(width=1100, height=200)
+        frame.pack(self.menu.add.button('Опции', self.options_menu, selection_color=(0, 0, 0)),
+                   align=pgm.locals.ALIGN_LEFT)
+        frame.pack(self.menu.add.button('Правила', self.rules_menu, selection_color=(0, 0, 0)),
+                   align=pgm.locals.ALIGN_RIGHT)
+        self.menu.add.vertical_margin(50)
         self.menu.add.button('Выйти', self.terminate, margin=(-125, 0), selection_color=(0, 0, 0))
+        self.menu.add.vertical_margin(10)
 
         self.options_menu.add.label("Опции")
         self.options_menu.add.vertical_margin(500)
         self.options_menu.add.button('Назад', pgm.events.BACK, selection_color=(0, 0, 0))
+
+        self.rules_menu.add.label("Правила")
+        self.rules_menu.add.vertical_margin(500)
+        self.rules_menu.add.button("Назад", pgm.events.BACK, selection_color=(0, 0, 0))
 
         self.select_menu.add.label("Перед началом игры...") # Эта часть будет записывать параметры в json файл
         self.select_menu.add.label("Позже тут можно будет выбрать имя игроков", margin=(-50, 0))
