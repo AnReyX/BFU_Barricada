@@ -11,15 +11,17 @@ from random import randint
 class Application:
     def __init__(self) -> None:
         pg.init()
+        if Path("Assets/Icons/Game.png").is_file():
+            pg.display.set_icon(pg.image.load("Assets/Icons/Game.png"))
         pg.display.set_caption("Баррикада!")
         width, height = 1500, 1000
         self.screen = pg.display.set_mode((width, height))
         self.clock = pg.time.Clock()
         self.fps = 60
-        if Path("Assets/data.json").is_file():
+        try:
             with open("Assets/data.json", encoding='utf-8') as f:
                 self.data = json.load(f)
-        else:
+        except FileNotFoundError:
             self.data = {"PlayerOne": "Игрок 1", "PlayerTwo": "Игрок 2", "Time": 300, "Music": 50,
                          "Theme": 0, "SFX": 100}
             self.save_parameters()
@@ -28,23 +30,25 @@ class Application:
         path = Path("Assets/Music")
         self.soundtrack = [[f"Assets/Music/{file.name}" for file in path.iterdir() if file.name[0] == "0"],
                            [f"Assets/Music/{file.name}" for file in path.iterdir() if file.name[0] == "1"]]
-        self.order = [0, -1] # [0, номер песни] - Прямой порядок, [1, номер песни] - Рандомный порядок
+        self.order = [0, -1] # [0, номер песни] - Прямой порядок, [1, номер песни] - Случайный порядок
         self.SONG_END_EVENT = pg.USEREVENT + 1
         pg.mixer.music.set_endevent(self.SONG_END_EVENT)
         pg.mixer.music.set_volume(self.data["Music"] / 100)
         self.menu_music = None
-        if Path("Assets/Music/menu.mp3").is_file():
-            self.menu_music = "Assets/Music/menu.mp3"
-            pg.mixer.music.load(self.menu_music)
-            pg.mixer.music.play(-1)
 
         self.game_manager = None
         self.UI = None
         self.game_started = False
         self.save_game = False
 
-        main_bg = pgm.BaseImage('Assets/MainMenu.png')
-        game_bg = pgm.BaseImage('Assets/GameMenu.png')
+        try:
+            main_bg = pgm.BaseImage('Assets/Images/MainMenu.png')
+        except AssertionError:
+            main_bg = (226, 232, 240)
+        try:
+            game_bg = pgm.BaseImage('Assets/Images/GameMenu.png')
+        except AssertionError:
+            game_bg = (226, 232, 240)
         main_theme = pgm.Theme(background_color=main_bg, widget_font_size=75, title=False, selection_color=(0, 0, 0))
         main_theme.widget_selection_effect = pgm.widgets.HighlightSelection(border_width=0)
         secondary_theme = pgm.Theme(background_color=(226, 232, 240), widget_font_size=40, title=False,
@@ -113,10 +117,16 @@ class Application:
         self.select_menu.add.label("Каковы имена игроков этого раунда?", font_size=50)
         self.select_menu.add.vertical_margin(230)
         frame_select = self.select_menu.add.frame_h(width=1000, height=320)
-        frame_select.pack(self.select_menu.add.image("Assets/Icons/Red.png", scale=(2, 2)),
-                          align=pgm.locals.ALIGN_LEFT)
-        frame_select.pack(self.select_menu.add.image("Assets/Icons/Blue.png", scale=(2, 2)),
-                          align=pgm.locals.ALIGN_RIGHT)
+        try:
+            frame_select.pack(self.select_menu.add.image("Assets/Icons/Red.png", scale=(2, 2)),
+                              align=pgm.locals.ALIGN_LEFT)
+        except AssertionError:
+            frame_select.pack(self.select_menu.add.label("Red.png не найден!", align=pgm.locals.ALIGN_LEFT))
+        try:
+            frame_select.pack(self.select_menu.add.image("Assets/Icons/Blue.png", scale=(2, 2)),
+                              align=pgm.locals.ALIGN_RIGHT)
+        except AssertionError:
+            frame_select.pack(self.select_menu.add.label("Blue.png не найден!", align=pgm.locals.ALIGN_RIGHT))
         input_one = self.select_menu.add.text_input("", default=self.data["PlayerOne"], maxchar=9,
                                                          onchange=lambda x: self.update_value("PlayerOne", x))
         input_two = self.select_menu.add.text_input("", default=self.data["PlayerTwo"], maxchar=9,
@@ -132,6 +142,10 @@ class Application:
 
     def run_application(self) -> None:
         self.menu.enable()
+        if Path("Assets/Music/menu.mp3").is_file():
+            self.menu_music = "Assets/Music/menu.mp3"
+            pg.mixer.music.load(self.menu_music)
+            pg.mixer.music.play(-1)
 
         while True:
             events = pg.event.get()
@@ -145,7 +159,7 @@ class Application:
                         self.game_manager.key_handler(event.key)
                     if event.type == self.SONG_END_EVENT or (self.game_manager.state < 2
                                                              and event.type == pg.KEYUP and event.key == pg.K_z):
-                        self.change_music()
+                        self.change_music() # Меняем музыку по её завершении или нажатии клавиши Z
 
             if self.menu.is_enabled():
                 self.menu.update(events)

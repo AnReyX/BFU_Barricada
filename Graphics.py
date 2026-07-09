@@ -44,12 +44,12 @@ class Player(pg.sprite.Sprite):
 
     def update(self) -> None:
         if self.is_moving:
-            direction = self.target_pos - self.pos
+            direction = self.target_pos - self.pos # Направление движения
 
-            distance = direction.length()
+            distance = direction.length() # Расстояние до цели
 
-            if distance <= self.speed:
-                self.pos = pg.math.Vector2(self.target_pos)  # Прилипаем ровно к цели
+            if distance <= self.speed: # Когда игрок достаточно близок к цели
+                self.pos = pg.math.Vector2(self.target_pos)
                 self.is_moving = False  # Останавливаемся
                 self.walk_sound.play()
             else:

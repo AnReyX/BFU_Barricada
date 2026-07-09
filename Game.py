@@ -76,41 +76,39 @@ class Game:
 
         for i in self.legal_squares:
             square = self.grid[i[0]][i[1]][0]
-            if square.collidepoint(pos): # Если да, мы точно на легальном квадратике
+            if square.collidepoint(pos): # Мы точно на легальной клетке
                 self.previews[self._game_state].move(square.topleft)
                 if self.draw_preview: self._remove_preview()
-                self.draw_preview = 1
+                self.draw_preview = 1 # Создаём превью хода
                 if clicked:
                     self._move_player(i)
                 return
 
-        temp = 0 # Точно на нелегальном квадратике, выставленной / невыставленной баррикаде
+        temp = 0 # Точно на нелегальной клетке / любой баррикаде
         for i in range(0, 17, 2):
-            if temp:
-                break
+            if temp: break
             for j in range(1, 16, 2):
                 bar = self.grid[i][j]
-                if bar[0].collidepoint(pos):
-                    temp = 1 if bar[1] == 1 else ((i, j), 2) # 0 - Ширина 80, 1 - Оба измерения 20, 2 - Высота 80
+                if bar[0].collidepoint(pos): # 0 - Ширина 80, 1 - Оба измерения 20, 2 - Высота 80
+                    temp = 1 if bar[1] == 1 else ((i, j), 2)
                     break
         for i in range(1, 16, 2):
-            if temp:
-                break
+            if temp: break
             for j in range(17):
                 bar = self.grid[i][j]
                 if bar[0].collidepoint(pos):
                     temp = 1 if bar[1] == 1 else ((i, j), j % 2)
                     break
-
-        if temp in (0, 1): # 0 - Не нашли баррикаду, мы на нелегальной клетке 1 - Мы на выставленной баррикаде
+        # temp: 0 нелегальная клетка; 1 - Выставленная баррикада; ((x, y), type) - невыставленная баррикада
+        if temp in (0, 1):
             if clicked and not temp:
                 self.UI.show_error("Нелегальный ход!")
             if self.draw_preview:
                 self._remove_preview()
             return
-        # К этому моменту остаётся, что мы на невыставленной баррикаде
+        # Мы на невыставленной баррикаде, необходимо выставить превью.
         if self.draw_preview and temp != self.hovered_index:
-            self._remove_preview()
+            self._remove_preview() # Стираем предыдущее превью
         if temp != self.hovered_index:
             self.hovered_index = temp
             self.hover_start_time = pg.time.get_ticks()
@@ -250,6 +248,7 @@ class Game:
             return
         self.can_place = True
         self.draw_preview = []
+        # how отвечает за направление превью и зависит от формы промежутка, где находится курсор
         if not how:
             k = -1 if pos[1] == 16 else 1
             for i in range(3):

@@ -39,11 +39,11 @@ class UserInterface:
             self.icons_group.add(i)
 
     def add_move(self, move_text: str) -> None:
-        self._display[0] = ""
+        self._display[0] = "" # Стираем предупреждение о неверном ходе
         if not self.move % 2:
             self._move_history += [f"{self.move // 2}.  {move_text}"]
             if len(self._move_history) > 7:
-                self.start_index += 1
+                self.start_index += 1 # Автоматически обновляем индекс
         else:
             self._move_history[-1] += f" | {move_text}"
 
@@ -58,7 +58,7 @@ class UserInterface:
         else:
             self.start_index = min(len(self._move_history) - 7, self.start_index + 1)
 
-    def _resign(self):
+    def _resign(self) -> None:
         if self._resign_time is None:
             return
         if self._resign_time:
@@ -66,8 +66,8 @@ class UserInterface:
             self.resign_button.set_title("Сдались")
             self.icons[self.move % 2].set_opacity(256)
             self.icons[1 - self.move % 2].set_opacity(128)
-            self.turn = f"{self._names[self.move % 2]} победил! (Ход {self.move // 2})"
-            self.play = f'{self._names[1 - self.move % 2]} сдался.'
+            self.turn = f"{self._names[1 - self.move % 2]} победил! (Ход {self.move // 2})"
+            self.play = f'{self._names[self.move % 2]} сдался.'
             self.add_move("Resign")
             pg.mixer.music.pause()
             self.start_index = max(0, len(self._move_history) - 7)
@@ -77,10 +77,10 @@ class UserInterface:
             self._resign_time = pg.time.get_ticks()
             self.resign_button.set_title("ТОЧНО?")
 
-    def has_resigned(self):
+    def has_resigned(self) -> bool:
         return self._resign_time is None
 
-    def time_win(self):
+    def time_win(self) -> None:
         self.move += 1
         self.icons[1 - self.move % 2].set_opacity(256)
         self.icons[self.move % 2].set_opacity(128)
